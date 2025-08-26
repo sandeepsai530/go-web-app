@@ -120,4 +120,8 @@ nodeSelector: {}
 
 tolerations: []
 
+<<<<<<< HEAD
 affinity: {}
+=======
+affinity: {}
+>>>>>>> 4c713a0e214088463b0b971d2da37a967daa7144
