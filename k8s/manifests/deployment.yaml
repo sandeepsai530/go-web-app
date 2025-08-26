@@ -1,13 +1,13 @@
 #deployment file for go-web-app
 apiVersion: apps/v1
 kind: Deployment
-metadata: 
+metadata:
   name: go-web-app
-  labels: 
+  labels:
     app: go-web-app
 spec:
-  replicas: 1
-  selector: 
+  replicas: 3
+  selector:
     matchLabels:
       app: go-web-app
   template:
