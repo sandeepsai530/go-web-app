@@ -1,4 +1,4 @@
 replicaCount: 1
 image:
   repository: sandeep530/go-web-app
-  tag: "18"
+  tag: "19"
