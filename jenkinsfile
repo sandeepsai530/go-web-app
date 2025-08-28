@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+    
+    tools {
+        jdk 'jdk17'
+        maven 'maven3'
+    }
+    environment {
+        GIT_CREDENTIALS = credentials('github-token')
+    }
+
+    stages {
+        stage('git checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/sandeepsai530/go-web-app.git'
+            }
+        }
+        
+        stage('Build & Test') {
+            steps {
+                sh 'go build -o go-web-app'
+                sh 'go test ./...'
+            }
+        }
+        
+        stage('Docker Build & Push') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh "docker build -t sandeep530/go-web-app:${BUILD_NUMBER} ."
+                        sh "docker push sandeep530/go-web-app:${BUILD_NUMBER}"
+                    }
+                }
+            }
+        }  
+        stage('Update Helm Chart') {
+            steps {
+                script {
+                    def IMAGE_TAG = "${env.BUILD_NUMBER}"
+            
+                    withCredentials([string(credentialsId: 'github-token-classic', variable: 'GIT_TOKEN')]) {
+                        sh """
+                            git config --global user.email "devops@example.com"
+                            git config --global user.name "Jenkins CI"
+
+                            sed -i 's/tag:.*/tag: "$IMAGE_TAG"/' helm/go-web-app-chart/values.yaml
+                            git add helm/go-web-app-chart/values.yaml
+                            git commit -m "Update image tag to $IMAGE_TAG" || echo "No changes"
+
+                            git remote set-url origin https://sandeepsai530:${GIT_TOKEN}@github.com/sandeepsai530/go-web-app.git
+                            git push origin main
+                        """
+                    }
+                }
+            }
+        }
+
+        }
+    }
